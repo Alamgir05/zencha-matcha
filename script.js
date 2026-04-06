@@ -1,0 +1,417 @@
+/**
+ * MATON — Vanilla JS Engine
+ * ─────────────────────────────────────────────────────────────────────────────
+ * Includes:
+ *  1. MatchaSequence  — scroll-driven canvas image sequence (30 frames)
+ *  2. Sticky nav + active link tracking
+ *  3. Scroll reveal (IntersectionObserver)
+ *  4. Cart counter
+ *  5. Hamburger menu
+ *  6. Product card hover tilt
+ * ─────────────────────────────────────────────────────────────────────────────
+ */
+
+'use strict';
+
+/* ═══════════════════════════════════════════════════════════
+   1. MATCHA SEQUENCE — Canvas scroll animation
+   ─────────────────────────────────────────────────────────
+   Architecture:
+   • #hero-scroll-zone is 300vh tall → gives 200vh of scroll travel
+   • #hero-sticky is position:sticky top:0; height:100vh → stays pinned
+   • We read scrollY relative to #hero-scroll-zone's offsetTop
+   • Map that scroll distance → frame index → draw to <canvas>
+   • requestAnimationFrame used as a gate: only one draw per frame
+   ─────────────────────────────────────────────────────────
+   Scroll feel: "heavy, deliberate, ritualistic"
+   • 200vh of travel for 30 frames = ~6.7vh per frame
+   • No easing on the index itself — linear mapping
+   • rAF prevents frame queue buildup on fast scroll
+════════════════════════════════════════════════════════════ */
+
+(function MatchaSequence() {
+
+  const TOTAL_FRAMES    = 30;
+  const FRAME_DIR       = 'macha pics/';       // relative to index.html
+  const SCROLL_ZONE_VH  = 300;                 // must match CSS height: 300vh
+
+  // ── Elements ────────────────────────────────────────────
+  const canvas     = document.getElementById('matcha-canvas');
+  const scrollZone = document.getElementById('hero-scroll-zone');
+  const loader     = document.getElementById('seq-loader');
+  const loaderFill = document.getElementById('seq-loader-fill');
+  const loaderLabel = document.getElementById('seq-loader-label');
+  const scrollCue  = document.getElementById('scroll-cue');
+
+  if (!canvas || !scrollZone) return;
+
+  const ctx = canvas.getContext('2d');
+  if (!ctx) return;
+
+  // ── State ────────────────────────────────────────────────
+  const frames       = new Array(TOTAL_FRAMES);
+  let loadedCount    = 0;
+  let allLoaded      = false;
+  let currentFrame   = 0;
+  let rafPending     = false;
+  let canvasW        = 0;
+  let canvasH        = 0;
+
+  // Reduced-motion: skip animation, always show frame 0
+  const reducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+  // ── Build frame URLs ─────────────────────────────────────
+  function frameUrl(i) {
+    // i is 0-indexed; files are ezgif-frame-001.jpg … ezgif-frame-030.jpg
+    const n = String(i + 1).padStart(3, '0');
+    return `${FRAME_DIR}ezgif-frame-${n}.jpg`;
+  }
+
+  // ── Preload all frames ───────────────────────────────────
+  function preloadFrames() {
+    for (let i = 0; i < TOTAL_FRAMES; i++) {
+      const img = new Image();
+      img.src = frameUrl(i);
+
+      img.onload = function() {
+        frames[i] = img;
+        loadedCount++;
+
+        // Update loader UI
+        const pct = Math.round((loadedCount / TOTAL_FRAMES) * 100);
+        if (loaderFill)  loaderFill.style.width  = pct + '%';
+        if (loaderLabel) loaderLabel.textContent  = 'Preparing ceremony… ' + pct + '%';
+
+        if (loadedCount === TOTAL_FRAMES) {
+          allLoaded = true;
+          onAllLoaded();
+        }
+      };
+
+      img.onerror = function() {
+        // Count failures the same as success so we don't hang forever
+        loadedCount++;
+        if (loadedCount === TOTAL_FRAMES) {
+          allLoaded = true;
+          onAllLoaded();
+        }
+      };
+    }
+  }
+
+  // ── Called once all frames (or errors) are done ──────────
+  function onAllLoaded() {
+    // Draw frame 0 immediately
+    resizeCanvas();
+    drawFrame(0);
+
+    // Fade out loader
+    if (loader) {
+      loader.style.transition = 'opacity 0.8s ease';
+      loader.style.opacity    = '0';
+      setTimeout(function() { loader.style.display = 'none'; }, 900);
+    }
+
+    // Show scroll cue
+    if (scrollCue) {
+      scrollCue.style.opacity = '1';
+    }
+  }
+
+  // ── Canvas resize — matches display size at device pixel ratio ──
+  function resizeCanvas() {
+    const dpr  = window.devicePixelRatio || 1;
+    const rect = canvas.getBoundingClientRect();
+
+    // Only reallocate if size changed
+    const neededW = Math.round(rect.width  * dpr);
+    const neededH = Math.round(rect.height * dpr);
+
+    if (canvas.width !== neededW || canvas.height !== neededH) {
+      canvas.width  = neededW;
+      canvas.height = neededH;
+      canvasW = rect.width;
+      canvasH = rect.height;
+
+      // Re-draw current frame after resize
+      if (allLoaded) drawFrame(currentFrame);
+    }
+  }
+
+  // ── Draw a single frame to canvas, cover-fit ────────────
+  function drawFrame(idx) {
+    const img = frames[idx];
+    if (!img || !img.complete || !img.naturalWidth) return;
+
+    const dpr = window.devicePixelRatio || 1;
+    const w   = canvas.width  / dpr;
+    const h   = canvas.height / dpr;
+
+    // cover-fit: crop proportionally
+    const imgAR    = img.naturalWidth  / img.naturalHeight;
+    const canvasAR = w / h;
+
+    let sx = 0, sy = 0, sw = img.naturalWidth, sh = img.naturalHeight;
+
+    if (imgAR > canvasAR) {
+      // Image wider → crop sides
+      sw = img.naturalHeight * canvasAR;
+      sx = (img.naturalWidth - sw) / 2;
+    } else {
+      // Image taller → crop top/bottom
+      sh = img.naturalWidth / canvasAR;
+      sy = (img.naturalHeight - sh) / 2;
+    }
+
+    // Scale context for DPR
+    ctx.save();
+    ctx.scale(dpr, dpr);
+    ctx.clearRect(0, 0, w, h);
+    ctx.drawImage(img, sx, sy, sw, sh, 0, 0, w, h);
+    ctx.restore();
+  }
+
+  // ── Schedule a draw via rAF — prevents queueing > 60fps ─
+  function scheduleDraw(idx) {
+    if (rafPending) return;           // already a draw queued
+    rafPending = true;
+    requestAnimationFrame(function() {
+      drawFrame(idx);
+      rafPending = false;
+    });
+  }
+
+  // ── Scroll → frame index ─────────────────────────────────
+  function onScroll() {
+    if (!allLoaded || reducedMotion) return;
+
+    // Distance from top of scroll zone to viewport top
+    const zoneTop    = scrollZone.getBoundingClientRect().top + window.scrollY;
+    const scrolled   = window.scrollY - zoneTop;         // px scrolled past zone start
+    const maxScroll  = scrollZone.offsetHeight - window.innerHeight; // total travel px
+
+    // Clamp progress [0, 1]
+    const progress = Math.min(Math.max(scrolled / maxScroll, 0), 1);
+
+    // Map to frame index
+    const rawIdx = progress * (TOTAL_FRAMES - 1);
+    const idx    = Math.min(Math.max(Math.round(rawIdx), 0), TOTAL_FRAMES - 1);
+
+    if (idx !== currentFrame) {
+      currentFrame = idx;
+      scheduleDraw(idx);
+    }
+  }
+
+  // ── Resize handler ───────────────────────────────────────
+  function onResize() {
+    // Reset canvas backing store so DPR is recalculated
+    canvas.width  = 0;
+    canvas.height = 0;
+    resizeCanvas();
+  }
+
+  // ── Boot ─────────────────────────────────────────────────
+  window.addEventListener('scroll', onScroll, { passive: true });
+  window.addEventListener('resize', onResize, { passive: true });
+
+  // Initial size
+  resizeCanvas();
+
+  // Start preloading
+  preloadFrames();
+
+  // If reduced motion, skip loader immediately and show frame 0 on load
+  if (reducedMotion && loader) {
+    loader.style.display = 'none';
+  }
+
+})(); // end MatchaSequence IIFE
+
+
+/* ═══════════════════════════════════════════════════════════
+   2. STICKY NAV — scrolled class + active link
+════════════════════════════════════════════════════════════ */
+(function StickyNav() {
+  const header = document.getElementById('site-header');
+  if (!header) return;
+
+  const SECTIONS = ['hero', 'products', 'testimonials'];
+
+  function update() {
+    // Scrolled state
+    if (window.scrollY > 60) {
+      header.classList.add('scrolled');
+    } else {
+      header.classList.remove('scrolled');
+    }
+
+    // Active link
+    let current = '';
+    SECTIONS.forEach(function(id) {
+      const el = document.getElementById(id);
+      if (!el) return;
+      if (el.getBoundingClientRect().top <= 120) current = id;
+    });
+
+    document.querySelectorAll('.nav-link').forEach(function(link) {
+      const href = link.getAttribute('href').replace('#', '');
+      link.classList.toggle('active', href === current);
+    });
+  }
+
+  window.addEventListener('scroll', update, { passive: true });
+  update();
+})();
+
+
+/* ═══════════════════════════════════════════════════════════
+   3. SCROLL REVEAL — IntersectionObserver
+════════════════════════════════════════════════════════════ */
+(function ScrollReveal() {
+  const els = document.querySelectorAll('[data-animate]');
+  if (!els.length) return;
+
+  const obs = new IntersectionObserver(function(entries) {
+    entries.forEach(function(entry, i) {
+      if (!entry.isIntersecting) return;
+
+      // Stagger siblings
+      const siblings = Array.from(entry.target.parentElement.querySelectorAll('[data-animate]'));
+      const idx      = siblings.indexOf(entry.target);
+      const delay    = idx * 110;
+
+      setTimeout(function() {
+        entry.target.classList.add('visible');
+      }, delay);
+
+      obs.unobserve(entry.target);
+    });
+  }, { threshold: 0.12, rootMargin: '0px 0px -40px 0px' });
+
+  // Trigger hero elements immediately on load
+  document.querySelectorAll('#hero-sticky [data-animate]').forEach(function(el) {
+    setTimeout(function() { el.classList.add('visible'); }, 400);
+  });
+
+  // Observe everything else
+  els.forEach(function(el) {
+    if (!el.closest('#hero-sticky')) obs.observe(el);
+  });
+})();
+
+
+/* ═══════════════════════════════════════════════════════════
+   4. CART COUNTER
+════════════════════════════════════════════════════════════ */
+(function CartCounter() {
+  const countEl  = document.getElementById('cart-count');
+  const cartBtn  = document.getElementById('cart-btn');
+  let count = 0;
+
+  function bumpCart(e) {
+    e.preventDefault();
+    count++;
+    if (countEl) {
+      countEl.textContent      = count;
+      countEl.style.transform  = 'scale(1.6)';
+      countEl.style.background = '#fff';
+      
+      clearTimeout(countEl._resetTimeout);
+      countEl._resetTimeout = setTimeout(function() {
+        countEl.style.transform  = '';
+        countEl.style.background = '';
+      }, 300);
+    }
+
+    // Button feedback
+    const btn = e.currentTarget;
+    
+    // Save original text once on the very first click
+    if (!btn.dataset.origText) {
+      btn.dataset.origText = btn.textContent.trim();
+    }
+
+    btn.textContent      = '✓ Added!';
+    btn.style.background = '#2d5a3d';
+    btn.style.color      = '#fff';
+    
+    // Clear any existing reset timeout to prevent flickering or stuck states
+    clearTimeout(btn._resetTimeout);
+    
+    btn._resetTimeout = setTimeout(function() {
+      btn.textContent      = btn.dataset.origText;
+      btn.style.background = '';
+      btn.style.color      = '';
+    }, 1800);
+  }
+
+  // Wire all add-to-cart buttons
+  document.querySelectorAll('.add-to-cart').forEach(function(btn) {
+    btn.addEventListener('click', bumpCart);
+  });
+
+  // Cart icon itself
+  if (cartBtn) {
+    cartBtn.addEventListener('click', function(e) { e.preventDefault(); });
+  }
+})();
+
+
+/* ═══════════════════════════════════════════════════════════
+   5. HAMBURGER MENU
+════════════════════════════════════════════════════════════ */
+(function HamburgerMenu() {
+  const btn = document.getElementById('hamburger-btn');
+  const nav = document.getElementById('main-nav');
+  if (!btn || !nav) return;
+
+  let open = false;
+
+  btn.addEventListener('click', function() {
+    open = !open;
+    nav.classList.toggle('is-open', open);
+    btn.classList.toggle('is-active', open);
+  });
+
+  // Close on link click (mobile)
+  nav.querySelectorAll('a').forEach(function(a) {
+    a.addEventListener('click', function() { 
+      open = false; 
+      nav.classList.remove('is-open'); 
+      btn.classList.remove('is-active');
+    });
+  });
+})();
+
+
+/* ═══════════════════════════════════════════════════════════
+   6. CARD TILT (mini-cards, testimonials, acc-cards)
+════════════════════════════════════════════════════════════ */
+(function CardTilt() {
+  // Only run on non-touch devices
+  if (window.matchMedia('(hover: none)').matches) return;
+
+  const CARDS = '.mini-card, .testimonial-card, .acc-card';
+
+  document.querySelectorAll(CARDS).forEach(function(card) {
+    card.addEventListener('mousemove', function(e) {
+      const rect  = card.getBoundingClientRect();
+      const x     = e.clientX - rect.left;
+      const y     = e.clientY - rect.top;
+      const cx    = rect.width  / 2;
+      const cy    = rect.height / 2;
+      const tiltX = ((y - cy) / cy) * 4;
+      const tiltY = ((cx - x) / cx) * 4;
+      card.style.transform   = `perspective(600px) rotateX(${tiltX}deg) rotateY(${tiltY}deg) translateY(-4px)`;
+      card.style.boxShadow   = `${-tiltY * 1.5}px ${tiltX * 1.5}px 30px rgba(0,0,0,0.13)`;
+      card.style.transition  = 'none'; // Remove transition during active tilt for precision
+    });
+
+    card.addEventListener('mouseleave', function() {
+      card.style.transform  = '';
+      card.style.boxShadow  = '';
+      card.style.transition = ''; // Restore CSS transition
+    });
+  });
+})();

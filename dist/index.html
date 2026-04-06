@@ -1,0 +1,397 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>ZENCHA — Best Matcha in Town | Premium Japanese Matcha</title>
+  <meta name="description" content="ZENCHA delivers the finest ceremonial-grade Japanese matcha — crafted for purity, ritual, and calm luxury. Explore our starter kits, ceremonial blends, and matcha essentials." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" crossorigin href="/assets/index-D1xc0lWX.css">
+</head>
+<body>
+
+  <!-- ═══════════════════════════════════════════
+       HEADER / NAV
+  ════════════════════════════════════════════ -->
+  <header class="site-header" id="site-header">
+    <nav class="nav-inner">
+      <a href="#hero" class="wordmark" id="logo-link">ZENCHA</a>
+      <ul class="nav-links" id="main-nav">
+        <li><a href="#hero"         class="nav-link active">Home</a></li>
+        <li><a href="#products"     class="nav-link">Products</a></li>
+        <li><a href="#testimonials" class="nav-link">Testimonial</a></li>
+      </ul>
+      <div class="nav-utilities">
+        <a href="#" class="nav-util" id="sign-in-link">Sign In</a>
+        <a href="#" class="cart-btn" id="cart-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+          <span class="cart-text">My Cart</span> <span class="cart-count" id="cart-count">0</span>
+        </a>
+        <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ═══════════════════════════════════════════
+       HERO — Scroll-Driven Canvas Sequence
+       Architecture:
+         #hero-scroll-zone  = tall outer div (300vh) — drives scroll distance
+         #hero-sticky       = sticky inner (100vh) — stays pinned
+         #matcha-canvas     = canvas inside sticky — frames drawn here
+         .hero-overlay      = text columns overlaid via absolute pos
+  ════════════════════════════════════════════ -->
+  <section id="hero">
+
+    <!-- Scroll driver: 300vh tall gives 200vh of scroll travel while pinned -->
+    <div id="hero-scroll-zone">
+
+      <!-- Sticky canvas stage -->
+      <div id="hero-sticky">
+
+        <!-- Canvas: sequence renders here — full bleed -->
+        <canvas id="matcha-canvas" aria-label="Matcha preparation animation" role="img"></canvas>
+
+        <!-- Left gradient — darkens left side for text legibility -->
+        <div class="canvas-left-gradient" aria-hidden="true"></div>
+
+        <!-- Loading overlay — shown until all 30 frames are ready -->
+        <div class="seq-loader" id="seq-loader" aria-live="polite">
+          <div class="seq-loader__bar">
+            <div class="seq-loader__fill" id="seq-loader-fill"></div>
+          </div>
+          <span class="seq-loader__label" id="seq-loader-label">Preparing ceremony… 0%</span>
+        </div>
+
+        <!-- Hero text overlay — clean left column over canvas -->
+        <div class="hero-inner" aria-label="Hero content">
+
+          <!-- Left: headline + Japanese subtitle + CTA -->
+          <div class="hero-text-col" data-animate="fade-up">
+            <h1 class="hero-headline">
+              <span class="headline-line">Best Matcha</span>
+              <span class="headline-line italic">in Town</span>
+            </h1>
+            <div class="hero-jp-sub">最高のお茶</div>
+            <a href="#products" class="btn-hero-cta add-to-cart" id="hero-cta">Add To Cart</a>
+          </div>
+
+          <!-- Scroll cue — bottom center -->
+          <div class="hero-scroll-cue" id="scroll-cue" aria-hidden="true">
+            <div class="hero-scroll-cue__line"></div>
+            <span>Scroll</span>
+          </div>
+
+        </div><!-- /hero-inner -->
+
+      </div><!-- /hero-sticky -->
+
+    </div><!-- /hero-scroll-zone -->
+
+  </section><!-- /hero -->
+
+  <!-- ═══════════════════════════════════════════
+       STARTER KIT SECTION
+  ════════════════════════════════════════════ -->
+  <section class="starter-kit" id="starter">
+    <div class="starter-inner">
+      <div class="starter-top">
+
+        <div class="starter-label-col" data-animate="fade-up">
+          <div class="section-eyebrow">スターターキット</div>
+          <h2 class="starter-title">Matcha<br/>Starter Kits</h2>
+          <p class="starter-copy">Begin your matcha journey with just what you need. Expertly paired tools and powder.</p>
+        </div>
+
+        <div class="starter-image-col" data-animate="scale-in">
+          <div class="starter-img-wrap">
+            <img src="/assets/matcha_starter_kit-DYa73_qH.png" alt="Matcha starter kit" class="starter-main-img" />
+            <div class="starter-badge">Get it for just<br/><strong>$25</strong></div>
+          </div>
+        </div>
+
+        <div class="starter-callouts-col">
+          <div class="callout-item" data-animate="fade-left">
+            <div class="callout-img-wrap"><img src="/assets/matcha_relax-togLqskM.png"        alt="Matcha Mug" /></div>
+            <div><h4>Matcha Mug</h4><p>Hand-thrown ceramic mug designed for the perfect sip.</p></div>
+          </div>
+          <div class="callout-item" data-animate="fade-left">
+            <div class="callout-img-wrap"><img src="/assets/matcha_tools-Dx4TPAY9.png"        alt="Matcha Whisk" /></div>
+            <div><h4>Matcha Whisk</h4><p>80-prong bamboo chasen for silky, frothy matcha every time.</p></div>
+          </div>
+          <div class="callout-item" data-animate="fade-left">
+            <div class="callout-img-wrap"><img src="/assets/ceremonial_matcha-IZ-wKFKA.png"   alt="Matcha Powder" /></div>
+            <div><h4>Matcha Powder</h4><p>Stone-ground first harvest ceremonial green tea powder.</p></div>
+          </div>
+        </div>
+
+      </div>
+      <div class="maton-logo-divider"><span>◆</span> ZENCHA <span>◆</span></div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       BENEFITS SECTION
+  ════════════════════════════════════════════ -->
+  <section class="benefits" id="benefits">
+    <div class="benefits-inner">
+      <div class="benefits-top">
+
+        <div class="benefits-headline-col" data-animate="fade-up">
+          <div class="section-eyebrow">Why Matcha?</div>
+          <h2 class="benefits-title">Experience Wellness<br/>with Every Sip</h2>
+          <p class="benefits-subtitle">Ancient wisdom, modern ritual. Each bowl is a moment of intentional calm.</p>
+        </div>
+
+        <div class="benefits-tiles">
+          <div class="benefit-tile" data-animate="fade-up">
+            <img src="/assets/matcha_lifestyle-CO44pSU3.png" alt="Anti-oxidant matcha" class="tile-img" />
+            <div class="tile-label"><span class="tile-dot"></span>Anti Oxidant</div>
+          </div>
+          <div class="benefit-tile benefit-tile--offset" data-animate="fade-up">
+            <img src="/assets/matcha_relax-togLqskM.png" alt="Relax and focus" class="tile-img" />
+            <div class="tile-label"><span class="tile-dot"></span>Relax &amp; Focus</div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="benefits-pillars">
+        <div class="pillar" data-animate="fade-up">
+          <div class="pillar-icon">
+            <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="19" stroke="#B9FF3D" stroke-width="1.5"/><circle cx="20" cy="20" r="8" fill="#B9FF3D" opacity=".2"/><circle cx="20" cy="20" r="3" fill="#B9FF3D"/></svg>
+          </div>
+          <h4>Rich Flavor &amp; Vibrant Color</h4>
+          <p>Our matcha is known for its vibrant emerald hue and deep umami flavor — a hallmark of superior quality.</p>
+        </div>
+        <div class="pillar" data-animate="fade-up">
+          <div class="pillar-icon">
+            <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="19" stroke="#B9FF3D" stroke-width="1.5"/><circle cx="20" cy="20" r="8" fill="#B9FF3D" opacity=".2"/><circle cx="20" cy="20" r="3" fill="#B9FF3D"/></svg>
+          </div>
+          <h4>Authentic Japanese Matcha</h4>
+          <p>Sourced directly from Uji, Kyoto — the world's most revered matcha-growing region since the 12th century.</p>
+        </div>
+        <div class="pillar" data-animate="fade-up">
+          <div class="pillar-icon">
+            <svg viewBox="0 0 40 40" fill="none"><circle cx="20" cy="20" r="19" stroke="#B9FF3D" stroke-width="1.5"/><circle cx="20" cy="20" r="8" fill="#B9FF3D" opacity=".2"/><circle cx="20" cy="20" r="3" fill="#B9FF3D"/></svg>
+          </div>
+          <h4>Health &amp; Sustainability</h4>
+          <p>Shade-grown, hand-picked, and stone-milled. Sustainable farming practices that honor the land and your body.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       PRODUCT COLLECTION
+  ════════════════════════════════════════════ -->
+  <section class="products" id="products">
+    <div class="products-inner">
+
+      <div class="products-header" data-animate="fade-up">
+        <div class="section-eyebrow">Our Collection</div>
+        <h2 class="products-title">Discover the World<br/><em>of Matcha</em></h2>
+      </div>
+
+      <div class="products-grid">
+        <div class="products-stack">
+          <div class="mini-card" data-animate="fade-up">
+            <div class="mini-card-img"><img src="/assets/ceremonial_matcha-IZ-wKFKA.png" alt="Everyday Matcha" /></div>
+            <div class="mini-card-info">
+              <span class="grade-tag">Culinary Grade</span>
+              <h5>Everyday Matcha</h5>
+              <p>Smooth and versatile for lattes, baking, and smoothies.</p>
+              <div class="mini-card-footer">
+                <span class="price">$18 <small>/ 50gr</small></span>
+                <button class="btn-ghost-sm add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+          </div>
+          <div class="mini-card" data-animate="fade-up">
+            <div class="mini-card-img"><img src="/assets/matcha_starter_kit-DYa73_qH.png" alt="Seiun Matcha" /></div>
+            <div class="mini-card-info">
+              <span class="grade-tag grade-tag--select">Select Grade</span>
+              <h5>Seiun Matcha</h5>
+              <p>Balanced sweetness with a lingering finish, perfect for daily ceremony.</p>
+              <div class="mini-card-footer">
+                <span class="price">$26 <small>/ 40gr</small></span>
+                <button class="btn-ghost-sm add-to-cart">Add to Cart</button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="featured-product" data-animate="scale-in">
+          <div class="featured-top">
+            <span class="jp-label">儀式用抹茶</span>
+            <span class="featured-grade">Ceremonial Grade Matcha</span>
+          </div>
+          <div class="featured-img-wrap">
+            <div class="featured-circle-bg"></div>
+            <img src="/assets/hero_matcha_bowl-B7hYEf7S.png" alt="Ceremonial Grade Matcha" class="featured-img" />
+          </div>
+          <div class="featured-info">
+            <p class="featured-desc">The pinnacle of matcha craftsmanship. First harvest, shade-grown, stone-milled to order.</p>
+            <div class="featured-price-row">
+              <span class="featured-price">$32 <small>/ 30gr</small></span>
+              <button class="btn-primary btn-sm add-to-cart">Add to Cart</button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="accessories-row">
+        <div class="acc-card" data-animate="fade-up">
+          <div class="acc-img"><img src="/assets/matcha_tools-Dx4TPAY9.png"     alt="Bamboo Whisk" /></div>
+          <h5>Bamboo Whisk</h5><p>Traditional 80-prong chasen</p><span class="acc-price">$16</span>
+        </div>
+        <div class="acc-card" data-animate="fade-up">
+          <div class="acc-img"><img src="/assets/matcha_relax-togLqskM.png"     alt="Matcha Mug" /></div>
+          <h5>Matcha Mug</h5><p>Hand-thrown chawan bowl</p><span class="acc-price">$22</span>
+        </div>
+        <div class="acc-card" data-animate="fade-up">
+          <div class="acc-img"><img src="/assets/matcha_lifestyle-CO44pSU3.png" alt="Ceramic Tea Pot" /></div>
+          <h5>Ceramic Tea Pot</h5><p>Artisan Kyoto-style teapot</p><span class="acc-price">$38</span>
+        </div>
+      </div>
+
+      <div class="explore-cta" data-animate="fade-up">
+        <a href="#" class="btn-pill">Explore All Products →</a>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       ESSENTIALS
+  ════════════════════════════════════════════ -->
+  <section class="essentials" id="essentials">
+    <div class="essentials-inner">
+      <div class="essentials-header" data-animate="fade-up">
+        <div class="section-eyebrow">Pairings</div>
+        <h2 class="essentials-title">Matcha Pairing<br/><em>Essentials</em></h2>
+        <p class="essentials-subtitle">Beyond the bowl — explore our curated culinary matcha blends for every occasion.</p>
+      </div>
+      <div class="essentials-grid">
+        <div class="essential-card" data-animate="fade-up">
+          <div class="essential-img-wrap">
+            <img src="/assets/matcha_latte-DpMH4xSs.png" alt="Matcha Latte Mix" class="essential-img" />
+            <div class="essential-price-tag">$19</div>
+          </div>
+          <div class="essential-info">
+            <span class="essential-label">New Arrival</span>
+            <h3>Matcha Latte Mix</h3>
+            <p>A harmonious blend of ceremonial matcha and oat milk powder — just add water for a creamy morning ritual.</p>
+            <button class="btn-primary btn-sm add-to-cart">Shop Now</button>
+          </div>
+        </div>
+        <div class="essential-card essential-card--alt" data-animate="fade-up">
+          <div class="essential-img-wrap">
+            <img src="/assets/matcha_cake-Dq_-79RB.png" alt="Matcha Cake Powder" class="essential-img" />
+            <div class="essential-price-tag">$23</div>
+          </div>
+          <div class="essential-info">
+            <span class="essential-label">Best Seller</span>
+            <h3>Matcha Cake Powder</h3>
+            <p>Vibrant culinary-grade matcha blended to retain its color in baking — perfect for cakes, cookies, and pastries.</p>
+            <button class="btn-primary btn-sm add-to-cart">Shop Now</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       TESTIMONIALS
+  ════════════════════════════════════════════ -->
+  <section class="testimonials" id="testimonials">
+    <div class="testimonials-inner">
+      <div class="section-eyebrow center-eyebrow">What People Say</div>
+      <h2 class="testimonials-title" data-animate="fade-up">Loved by Matcha<br/><em>Enthusiasts</em></h2>
+      <div class="testimonials-grid">
+        <div class="testimonial-card" data-animate="fade-up">
+          <div class="stars">★★★★★</div>
+          <p class="tcard-body">"ZENCHA's ceremonial matcha has completely transformed my morning routine. The color is stunning and the taste is incomparable — floral, smooth, with just the right umami."</p>
+          <div class="tcard-author">
+            <div class="author-avatar" style="background:#2d5a3d"></div>
+            <div><strong>Sarah Mitchell</strong><span>Verified Buyer · NYC</span></div>
+          </div>
+        </div>
+        <div class="testimonial-card" data-animate="fade-up">
+          <div class="stars">★★★★★</div>
+          <p class="tcard-body">"I've tried dozens of matcha brands and ZENCHA sits at the very top. Ultra fine powder, no bitterness, whisks up beautifully. The starter kit was the perfect introduction."</p>
+          <div class="tcard-author">
+            <div class="author-avatar" style="background:#1a3a2a"></div>
+            <div><strong>James K.</strong><span>Verified Buyer · London</span></div>
+          </div>
+        </div>
+        <div class="testimonial-card" data-animate="fade-up">
+          <div class="stars">★★★★★</div>
+          <p class="tcard-body">"The matcha latte mix is my new obsession. So convenient, yet somehow it tastes just as good as what I'd get at a specialty café. Highly recommend."</p>
+          <div class="tcard-author">
+            <div class="author-avatar" style="background:#0f2a1c"></div>
+            <div><strong>Yuki T.</strong><span>Verified Buyer · Tokyo</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════════════════════════════════
+       FOOTER
+  ════════════════════════════════════════════ -->
+  <footer class="footer" id="footer">
+    <div class="footer-inner">
+      <div class="footer-cta-section">
+        <div class="footer-cta-text" data-animate="fade-up">
+          <div class="footer-eyebrow">Limited Time Offer</div>
+          <h2 class="footer-offer">Save up to 50%<br/>or more on matcha powder</h2>
+          <p class="footer-offer-sub">Fresh harvest. Direct from Uji. No compromises.</p>
+          <a href="#products" class="btn-lime-pill">Claim Your Discount →</a>
+        </div>
+        <div class="footer-imagery" data-animate="fade-left">
+          <img src="/assets/footer_pour-DgzXneCV.png" alt="Matcha being poured" class="footer-pour-img" />
+          <div class="footer-img-overlay"></div>
+        </div>
+      </div>
+      <div class="footer-divider"></div>
+      <div class="footer-bottom">
+        <div class="footer-col footer-brand-col">
+          <div class="footer-wordmark">ZENCHA</div>
+          <p class="footer-tagline">Purity. Craft. Ritual.</p>
+          <div class="footer-contact"><p>+62 812 3456 7895</p><p>matcha@gmail.com</p></div>
+        </div>
+        <div class="footer-col">
+          <h6>Products</h6>
+          <ul><li><a href="#">Matcha Powder →</a></li><li><a href="#">Matcha Starter Kits →</a></li><li><a href="#">Matcha Cake Powder →</a></li><li><a href="#">Accessories →</a></li></ul>
+        </div>
+        <div class="footer-col">
+          <h6>Company</h6>
+          <ul><li><a href="#">Our Story →</a></li><li><a href="#">Sourcing →</a></li><li><a href="#">Sustainability →</a></li><li><a href="#">Press →</a></li></ul>
+        </div>
+        <div class="footer-col">
+          <h6>Support</h6>
+          <ul><li><a href="#">FAQ →</a></li><li><a href="#">Shipping →</a></li><li><a href="#">Returns →</a></li><li><a href="#">Contact →</a></li></ul>
+        </div>
+      </div>
+      <div class="footer-legal">
+        <span>© 2026 ZENCHA. All rights reserved.</span>
+        <div class="footer-legal-links">
+          <a href="#">Privacy Policy</a>
+          <a href="#">Terms &amp; Conditions</a>
+          <a href="#">Cookie Policy</a>
+        </div>
+      </div>
+    </div>
+  </footer>
+
+  <script src="script.js"></script>
+</body>
+</html>
