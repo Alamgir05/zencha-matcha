@@ -34,8 +34,7 @@ const SCROLL_HEIGHT_VH = 300
 /** Build the array of frame URLs. */
 const buildFrameUrls = (): string[] =>
   Array.from({ length: TOTAL_FRAMES }, (_, i) => {
-    const n = String(i + 1).padStart(3, '0')
-    return `/macha-pics/ezgif-frame-${n}.jpg`
+    return `/frames/frame_${i}.png`
   })
 
 // ─── Helpers ─────────────────────────────────────────────────────────────────
