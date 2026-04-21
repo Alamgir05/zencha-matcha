@@ -69,11 +69,20 @@
 
   // ── Preload all frames ───────────────────────────────────
   function preloadFrames() {
+    // Failsafe: force remove loading screen after 5 seconds if getting stuck
+    const fallbackTimeout = setTimeout(function() {
+      if (!allLoaded) {
+        console.warn("Loading timeout reached: forcing site render.");
+        allLoaded = true;
+        onAllLoaded();
+      }
+    }, 5000);
+
     for (let i = 0; i < TOTAL_FRAMES; i++) {
       const img = new Image();
-      img.src = frameUrl(i);
 
       img.onload = function() {
+        if (allLoaded) return; // Prevent double trigger
         frames[i] = img;
         loadedCount++;
 
@@ -83,19 +92,25 @@
         if (loaderLabel) loaderLabel.textContent  = 'Preparing ceremony… ' + pct + '%';
 
         if (loadedCount === TOTAL_FRAMES) {
+          clearTimeout(fallbackTimeout);
           allLoaded = true;
           onAllLoaded();
         }
       };
 
       img.onerror = function() {
+        if (allLoaded) return; // Prevent double trigger
         // Count failures the same as success so we don't hang forever
         loadedCount++;
         if (loadedCount === TOTAL_FRAMES) {
+          clearTimeout(fallbackTimeout);
           allLoaded = true;
           onAllLoaded();
         }
       };
+      
+      // Set src AFTER event listeners to avoid race conditions with browser cache
+      img.src = frameUrl(i);
     }
   }
 

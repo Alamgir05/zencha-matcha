@@ -60,6 +60,11 @@ function MatchaSequenceFn() {
 
   // ── Preload all frames ──────────────────────────────────────────────────
   useEffect(() => {
+    // Fallback: force render after 5 seconds to prevent infinite loading
+    const fallbackTimeout = setTimeout(() => {
+      setAllLoaded(true)
+    }, 5000)
+
     const urls   = buildFrameUrls()
     const images = urls.map((url, idx) => {
       const img = new Image()
@@ -67,7 +72,10 @@ function MatchaSequenceFn() {
       img.onload = () => {
         setLoadedCount((c) => {
           const next = c + 1
-          if (next === TOTAL_FRAMES) setAllLoaded(true)
+          if (next === TOTAL_FRAMES) {
+            clearTimeout(fallbackTimeout)
+            setAllLoaded(true)
+          }
           return next
         })
         framesRef.current[idx] = img
@@ -77,7 +85,10 @@ function MatchaSequenceFn() {
         // Still increment so we don't hang forever
         setLoadedCount((c) => {
           const next = c + 1
-          if (next === TOTAL_FRAMES) setAllLoaded(true)
+          if (next === TOTAL_FRAMES) {
+            clearTimeout(fallbackTimeout)
+            setAllLoaded(true)
+          }
           return next
         })
       }
@@ -88,6 +99,7 @@ function MatchaSequenceFn() {
       return img
     })
     return () => {
+      clearTimeout(fallbackTimeout)
       // Abort loading on unmount
       images.forEach((img) => { img.src = '' })
     }
