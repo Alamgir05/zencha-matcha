@@ -32,7 +32,7 @@
 (function MatchaSequence() {
 
   const TOTAL_FRAMES    = 30;
-  const FRAME_DIR       = 'macha pics/';       // relative to index.html
+  const FRAME_DIR       = '/frames/';       // relative to index.html
   const SCROLL_ZONE_VH  = 300;                 // must match CSS height: 300vh
 
   // ── Elements ────────────────────────────────────────────
