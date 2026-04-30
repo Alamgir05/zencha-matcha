@@ -317,59 +317,131 @@
 
 
 /* ═══════════════════════════════════════════════════════════
-   4. CART COUNTER
+   4. CART — Add to Cart with real backend API
 ════════════════════════════════════════════════════════════ */
-(function CartCounter() {
-  const countEl  = document.getElementById('cart-count');
-  const cartBtn  = document.getElementById('cart-btn');
-  let count = 0;
+(function Cart() {
+  const API     = 'http://localhost:5000';
+  const countEl = document.getElementById('cart-count');
 
-  function bumpCart(e) {
+  function setCountDisplay(n) {
+    if (!countEl) return;
+    countEl.textContent = n;
+  }
+
+  // Load cart count from server on page load
+  async function loadCartCount() {
+    const token = localStorage.getItem('zenchaToken');
+    if (!token) return;
+    try {
+      const res = await fetch(API + '/api/cart', {
+        headers: { 'Authorization': 'Bearer ' + token }
+      });
+      if (!res.ok) return;
+      const data = await res.json();
+      const total = (data.items || []).reduce(function(sum, item) {
+        return sum + item.quantity;
+      }, 0);
+      setCountDisplay(total);
+    } catch (err) {
+      console.log('Could not load cart count:', err.message);
+    }
+  }
+
+  // Handle Add to Cart button click
+  async function handleAddToCart(e) {
     e.preventDefault();
-    count++;
-    if (countEl) {
-      countEl.textContent      = count;
-      countEl.style.transform  = 'scale(1.6)';
-      countEl.style.background = '#fff';
-      
-      clearTimeout(countEl._resetTimeout);
-      countEl._resetTimeout = setTimeout(function() {
-        countEl.style.transform  = '';
-        countEl.style.background = '';
-      }, 300);
+    const btn       = e.currentTarget;
+    const productId = btn.dataset.productId;
+    const token     = localStorage.getItem('zenchaToken');
+
+    console.log('Add to cart:', productId, 'logged in:', !!token);
+
+    // Not logged in → open the sign in modal
+    if (!token) {
+      var signIn = document.getElementById('sign-in-link');
+      if (signIn) signIn.click();
+      return;
     }
 
-    // Button feedback
-    const btn = e.currentTarget;
-    
-    // Save original text once on the very first click
-    if (!btn.dataset.origText) {
-      btn.dataset.origText = btn.textContent.trim();
+    if (!productId) {
+      console.warn('Button has no data-product-id:', btn);
+      return;
     }
 
-    btn.textContent      = '✓ Added!';
-    btn.style.background = '#2d5a3d';
-    btn.style.color      = '#fff';
-    
-    // Clear any existing reset timeout to prevent flickering or stuck states
-    clearTimeout(btn._resetTimeout);
-    
-    btn._resetTimeout = setTimeout(function() {
-      btn.textContent      = btn.dataset.origText;
-      btn.style.background = '';
-      btn.style.color      = '';
-    }, 1800);
+    if (!btn.dataset.origText) btn.dataset.origText = btn.textContent.trim();
+    btn.textContent   = 'Adding...';
+    btn.style.opacity = '0.7';
+    btn.disabled      = true;
+
+    try {
+      const res = await fetch(API + '/api/cart/add', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Authorization': 'Bearer ' + token
+        },
+        body: JSON.stringify({ productId: productId, quantity: 1 })
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        console.error('Cart error:', data.message);
+        btn.textContent   = btn.dataset.origText;
+        btn.style.opacity = '';
+        btn.disabled      = false;
+        return;
+      }
+
+      console.log('Cart updated:', data);
+
+      // Update badge count
+      const total = (data.items || []).reduce(function(sum, item) {
+        return sum + item.quantity;
+      }, 0);
+      setCountDisplay(total);
+
+      if (countEl) {
+        countEl.style.transform  = 'scale(1.6)';
+        countEl.style.background = '#fff';
+        setTimeout(function() {
+          countEl.style.transform  = '';
+          countEl.style.background = '';
+        }, 300);
+      }
+
+      btn.textContent      = '\u2713 Added!';
+      btn.style.background = '#2d5a3d';
+      btn.style.color      = '#fff';
+      btn.style.opacity    = '1';
+
+      setTimeout(function() {
+        btn.textContent      = btn.dataset.origText;
+        btn.style.background = '';
+        btn.style.color      = '';
+        btn.disabled         = false;
+      }, 1800);
+
+    } catch (err) {
+      console.error('Cart fetch error:', err.message);
+      btn.textContent   = btn.dataset.origText;
+      btn.style.opacity = '';
+      btn.disabled      = false;
+    }
   }
 
   // Wire all add-to-cart buttons
   document.querySelectorAll('.add-to-cart').forEach(function(btn) {
-    btn.addEventListener('click', bumpCart);
+    btn.addEventListener('click', handleAddToCart);
   });
 
-  // Cart icon itself
-  if (cartBtn) {
-    cartBtn.addEventListener('click', function(e) { e.preventDefault(); });
-  }
+  // Cart icon — now a real link to /cart.html, no need to prevent default
+  // (just kept for badge load reference)
+
+
+  // Load count from server on startup
+  loadCartCount();
+
 })();
 
 
@@ -430,3 +502,201 @@
     });
   });
 })();
+
+
+/* ═══════════════════════════════════════════════════════════
+   7. AUTH — Signup / Login modal
+   Talks to Express backend at localhost:5000
+════════════════════════════════════════════════════════════ */
+(function Auth() {
+
+  const API = 'http://localhost:5000';
+
+  // ── Elements ─────────────────────────────────────────────
+  const overlay    = document.getElementById('auth-overlay');
+  const signInLink = document.getElementById('sign-in-link');
+  const closeBtn   = document.getElementById('auth-close');
+  const tabLogin   = document.getElementById('tab-login');
+  const tabSignup  = document.getElementById('tab-signup');
+  const form       = document.getElementById('auth-form');
+  const fieldName  = document.getElementById('field-name');
+  const nameInput  = document.getElementById('auth-name');
+  const emailInput = document.getElementById('auth-email');
+  const passInput  = document.getElementById('auth-password');
+  const errorBox   = document.getElementById('auth-error');
+  const submitBtn  = document.getElementById('auth-submit');
+  const titleEl    = document.getElementById('auth-title');
+  const subtitleEl = document.getElementById('auth-subtitle');
+  const switchText = document.getElementById('auth-switch-text');
+  const switchBtn  = document.getElementById('auth-switch-btn');
+
+  if (!overlay || !signInLink) return;
+
+  let mode = 'login'; // 'login' | 'signup'
+
+  // ── Restore session ───────────────────────────────────────
+  const stored = localStorage.getItem('zenchaUser');
+  if (stored) {
+    try { updateNavForUser(JSON.parse(stored)); } catch(e) {}
+  }
+
+  // ── Open / Close ─────────────────────────────────────────
+  function openModal() {
+    overlay.style.display = 'flex';
+    document.body.style.overflow = 'hidden';
+    emailInput.focus();
+  }
+
+  function closeModal() {
+    overlay.style.display = 'none';
+    document.body.style.overflow = '';
+    clearError();
+    form.reset();
+  }
+
+  signInLink.addEventListener('click', function(e) {
+    e.preventDefault();
+    openModal();
+  });
+
+  closeBtn.addEventListener('click', closeModal);
+
+  overlay.addEventListener('click', function(e) {
+    if (e.target === overlay) closeModal();
+  });
+
+  document.addEventListener('keydown', function(e) {
+    if (e.key === 'Escape' && overlay.style.display !== 'none') closeModal();
+  });
+
+  // ── Tab switching ─────────────────────────────────────────
+  function setMode(m) {
+    mode = m;
+    clearError();
+
+    if (mode === 'login') {
+      tabLogin.classList.add('active');
+      tabSignup.classList.remove('active');
+      fieldName.style.display = 'none';
+      titleEl.textContent     = 'Welcome back';
+      subtitleEl.textContent  = 'Sign in to your account';
+      submitBtn.textContent   = 'Sign In';
+      switchText.textContent  = "Don't have an account?";
+      switchBtn.textContent   = 'Sign up';
+    } else {
+      tabSignup.classList.add('active');
+      tabLogin.classList.remove('active');
+      fieldName.style.display = '';
+      titleEl.textContent     = 'Create account';
+      subtitleEl.textContent  = 'Join the matcha ritual';
+      submitBtn.textContent   = 'Create Account';
+      switchText.textContent  = 'Already have an account?';
+      switchBtn.textContent   = 'Sign in';
+    }
+  }
+
+  tabLogin.addEventListener('click', function() { setMode('login'); });
+  tabSignup.addEventListener('click', function() { setMode('signup'); });
+  switchBtn.addEventListener('click', function() {
+    setMode(mode === 'login' ? 'signup' : 'login');
+  });
+
+  // ── Error helper ─────────────────────────────────────────
+  function showError(msg) {
+    errorBox.textContent = msg;
+    errorBox.style.display = '';
+  }
+
+  function clearError() {
+    errorBox.style.display = 'none';
+    errorBox.textContent = '';
+  }
+
+  // ── Form submit → API call ────────────────────────────────
+  form.addEventListener('submit', async function(e) {
+    e.preventDefault();
+    clearError();
+
+    const email    = emailInput.value.trim();
+    const password = passInput.value;
+    const name     = nameInput ? nameInput.value.trim() : '';
+
+    if (!email || !password) {
+      showError('Email and password are required');
+      return;
+    }
+
+    if (mode === 'signup' && !name) {
+      showError('Name is required');
+      return;
+    }
+
+    submitBtn.disabled    = true;
+    submitBtn.textContent = 'Please wait...';
+
+    console.log('Auth request:', mode, email);
+
+    try {
+      const endpoint = mode === 'login' ? '/api/auth/login' : '/api/auth/signup';
+      const body     = mode === 'login'
+        ? { email, password }
+        : { name, email, password };
+
+      const res  = await fetch(API + endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body)
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.message || 'Something went wrong');
+        return;
+      }
+
+      console.log('Auth success:', data.name, data.email);
+
+      // Save token + user info
+      localStorage.setItem('zenchaToken', data.token);
+      localStorage.setItem('zenchaUser', JSON.stringify({
+        name: data.name,
+        email: data.email,
+        isAdmin: data.isAdmin
+      }));
+
+      updateNavForUser(data);
+      closeModal();
+
+    } catch (err) {
+      console.error('Auth fetch error:', err.message);
+      showError('Cannot connect to server. Is the backend running?');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = mode === 'login' ? 'Sign In' : 'Create Account';
+    }
+  });
+
+  // ── Update nav after login ────────────────────────────────
+  function updateNavForUser(user) {
+    if (!signInLink) return;
+    const firstName = user.name.split(' ')[0];
+
+    // Replace the Sign In link with user name + logout
+    const wrapper = document.createElement('div');
+    wrapper.className = 'nav-user';
+    wrapper.innerHTML = `
+      <span class="nav-util" id="nav-username">Hi, ${firstName}</span>
+      <button class="nav-logout" id="logout-btn">Logout</button>
+    `;
+
+    signInLink.replaceWith(wrapper);
+
+    document.getElementById('logout-btn').addEventListener('click', function() {
+      localStorage.removeItem('zenchaToken');
+      localStorage.removeItem('zenchaUser');
+      location.reload();
+    });
+  }
+
+})(); // end Auth

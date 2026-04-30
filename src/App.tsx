@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react'
 import MatchaSequence from './components/MatchaSequence'
+import AuthModal from './components/AuthModal'
 
 // ─── Cart counter hook ────────────────────────────────────────────────────────
 function useCart() {
@@ -51,6 +52,17 @@ export default function App() {
   const { count: cartCount, addItem } = useCart()
   const [scrolled, setScrolled] = useState(false)
   const [menuOpen, setMenuOpen] = useState(false)
+  const [authOpen, setAuthOpen] = useState(false)
+
+  // check if user is already logged in
+  const storedUser = localStorage.getItem('user')
+  const [user, setUser] = useState(storedUser ? JSON.parse(storedUser) : null)
+
+  const handleLogout = () => {
+    localStorage.removeItem('token')
+    localStorage.removeItem('user')
+    setUser(null)
+  }
 
   // Sticky nav
   useEffect(() => {
@@ -75,7 +87,14 @@ export default function App() {
           </ul>
 
           <div className="nav-utilities">
-            <a href="#" className="nav-util" id="sign-in-link">Sign In</a>
+            {user ? (
+              <div className="nav-user">
+                <span className="nav-util" id="nav-username">Hi, {user.name.split(' ')[0]}</span>
+                <button className="nav-logout" id="logout-btn" onClick={handleLogout}>Logout</button>
+              </div>
+            ) : (
+              <button className="nav-util nav-util--btn" id="sign-in-link" onClick={() => setAuthOpen(true)}>Sign In</button>
+            )}
             <a href="#" className="cart-btn" id="cart-btn" onClick={(e) => { e.preventDefault(); addItem() }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
                 <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
@@ -472,6 +491,13 @@ export default function App() {
 
         </div>
       </footer>
+
+      {authOpen && (
+        <AuthModal
+          onClose={() => setAuthOpen(false)}
+          onSuccess={(data) => setUser(data)}
+        />
+      )}
     </>
   )
 }

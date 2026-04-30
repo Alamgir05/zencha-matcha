@@ -1,0 +1,519 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>My Cart — ZENCHA</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;0,900;1,400;1,700&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+  <style>
+    /* ── Cart page ──────────────────────────────────────── */
+    .cart-page {
+      background: var(--clr-cream);
+      min-height: 100vh;
+      padding-top: var(--nav-h);
+    }
+
+    .cart-page-hero {
+      background: var(--clr-dark);
+      padding: 60px clamp(20px, 4vw, 60px) 48px;
+      text-align: center;
+    }
+    .cart-page-hero .section-eyebrow { color: rgba(255,255,255,0.4); margin-bottom: 12px; }
+    .cart-page-hero h1 {
+      font-family: var(--font-serif); font-size: clamp(2rem, 4vw, 3.2rem);
+      font-weight: 900; color: var(--clr-white);
+    }
+
+    .cart-layout {
+      max-width: 1100px; margin: 0 auto;
+      padding: 48px clamp(20px, 4vw, 60px);
+      display: grid;
+      grid-template-columns: 1fr 340px;
+      gap: 32px;
+      align-items: start;
+    }
+
+    /* ── Cart items panel ────────────────────────────── */
+    .cart-items-panel {}
+
+    .cart-items-header {
+      font-family: var(--font-serif); font-size: 1.3rem; font-weight: 700;
+      color: var(--clr-charcoal); margin-bottom: 20px;
+      padding-bottom: 16px; border-bottom: 1.5px solid rgba(0,0,0,0.08);
+    }
+
+    .cart-item {
+      display: grid;
+      grid-template-columns: 80px 1fr auto;
+      gap: 16px;
+      align-items: center;
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(0,0,0,0.07);
+    }
+    .cart-item:last-child { border-bottom: none; }
+
+    .cart-item-img {
+      width: 80px; height: 80px; border-radius: var(--radius-md);
+      overflow: hidden; background: var(--clr-cream-deep);
+      flex-shrink: 0;
+    }
+    .cart-item-img img { width: 100%; height: 100%; object-fit: cover; }
+
+    .cart-item-info {}
+    .cart-item-name {
+      font-family: var(--font-serif); font-size: 1rem; font-weight: 600;
+      color: var(--clr-charcoal); margin-bottom: 4px;
+    }
+    .cart-item-unit-price { font-size: 0.78rem; color: var(--clr-text-light); margin-bottom: 12px; }
+
+    .qty-controls { display: flex; align-items: center; gap: 8px; }
+    .qty-btn {
+      width: 30px; height: 30px;
+      border-radius: 50%; border: 1.5px solid rgba(0,0,0,0.15);
+      background: transparent; font-size: 1rem; font-weight: 600;
+      color: var(--clr-charcoal); cursor: pointer;
+      display: flex; align-items: center; justify-content: center;
+      transition: all var(--ease);
+    }
+    .qty-btn:hover { background: var(--clr-dark); color: var(--clr-white); border-color: var(--clr-dark); }
+    .qty-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+    .qty-value {
+      font-size: 0.9rem; font-weight: 600; color: var(--clr-charcoal);
+      min-width: 24px; text-align: center;
+    }
+
+    .cart-item-right { text-align: right; display: flex; flex-direction: column; align-items: flex-end; gap: 12px; }
+    .cart-item-total {
+      font-family: var(--font-serif); font-size: 1.2rem; font-weight: 700;
+      color: var(--clr-charcoal);
+    }
+    .btn-remove {
+      font-size: 0.72rem; color: var(--clr-text-light); background: none; border: none;
+      cursor: pointer; text-decoration: underline; text-underline-offset: 3px;
+      transition: color var(--ease);
+    }
+    .btn-remove:hover { color: #c0392b; }
+
+    /* ── Order summary sidebar ───────────────────────── */
+    .order-summary {
+      background: var(--clr-white);
+      border-radius: var(--radius-xl);
+      padding: 28px;
+      border: 1px solid rgba(0,0,0,0.07);
+      box-shadow: var(--shadow-card);
+      position: sticky; top: calc(var(--nav-h) + 20px);
+    }
+    .order-summary h3 {
+      font-family: var(--font-serif); font-size: 1.2rem; font-weight: 700;
+      color: var(--clr-charcoal); margin-bottom: 20px;
+      padding-bottom: 14px; border-bottom: 1.5px solid rgba(0,0,0,0.08);
+    }
+    .summary-row {
+      display: flex; justify-content: space-between; align-items: center;
+      font-size: 0.85rem; color: var(--clr-text-light);
+      margin-bottom: 10px;
+    }
+    .summary-row.total {
+      font-size: 1rem; font-weight: 700; color: var(--clr-charcoal);
+      border-top: 1.5px solid rgba(0,0,0,0.08);
+      padding-top: 14px; margin-top: 8px;
+    }
+    .summary-row .summary-val { font-weight: 600; color: var(--clr-charcoal); }
+    .summary-row.total .summary-val {
+      font-family: var(--font-serif); font-size: 1.4rem;
+    }
+
+    .btn-checkout {
+      width: 100%; margin-top: 20px;
+      background: var(--clr-dark); color: var(--clr-white);
+      font-family: var(--font-sans); font-size: 0.9rem; font-weight: 600;
+      padding: 15px; border: none; border-radius: var(--radius-pill);
+      cursor: pointer; transition: background var(--ease), transform var(--ease);
+    }
+    .btn-checkout:hover { background: var(--clr-dark-soft); transform: translateY(-1px); }
+    .btn-checkout:disabled { opacity: 0.5; cursor: not-allowed; }
+
+    .btn-continue {
+      display: block; text-align: center; margin-top: 14px;
+      font-size: 0.8rem; color: var(--clr-text-light);
+      text-decoration: underline; text-underline-offset: 3px;
+      transition: color var(--ease);
+    }
+    .btn-continue:hover { color: var(--clr-charcoal); }
+
+    /* ── States ──────────────────────────────────────── */
+    .cart-state {
+      grid-column: 1 / -1; text-align: center;
+      padding: 80px 20px;
+    }
+    .cart-state h3 { font-family: var(--font-serif); font-size: 1.6rem; color: var(--clr-charcoal); margin-bottom: 12px; }
+    .cart-state p  { font-size: 0.85rem; color: var(--clr-text-light); margin-bottom: 28px; }
+
+    .spinner { width: 36px; height: 36px; border: 3px solid rgba(0,0,0,0.1); border-top-color: var(--clr-dark); border-radius: 50%; animation: spin 0.7s linear infinite; margin: 0 auto 20px; }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ── Not logged in banner ────────────────────────── */
+    .login-prompt {
+      max-width: 460px; margin: 80px auto; text-align: center; padding: 0 20px;
+    }
+    .login-prompt h3 { font-family: var(--font-serif); font-size: 2rem; color: var(--clr-charcoal); margin-bottom: 12px; }
+    .login-prompt p  { font-size: 0.88rem; color: var(--clr-text-light); margin-bottom: 28px; line-height: 1.6; }
+    .btn-login-cta {
+      display: inline-block; background: var(--clr-dark); color: var(--clr-white);
+      font-family: var(--font-sans); font-size: 0.9rem; font-weight: 600;
+      padding: 14px 36px; border-radius: var(--radius-pill); border: none;
+      cursor: pointer; transition: background var(--ease);
+    }
+    .btn-login-cta:hover { background: var(--clr-dark-soft); }
+
+    @media (max-width: 768px) {
+      .cart-layout { grid-template-columns: 1fr; }
+      .order-summary { position: static; }
+      .cart-item { grid-template-columns: 70px 1fr; }
+      .cart-item-right { grid-column: 1 / -1; flex-direction: row; justify-content: space-between; align-items: center; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <header class="site-header scrolled" id="site-header">
+    <nav class="nav-inner">
+      <a href="/" class="wordmark">ZENCHA</a>
+      <ul class="nav-links" id="main-nav">
+        <li><a href="/"              class="nav-link">Home</a></li>
+        <li><a href="/products.html" class="nav-link">Products</a></li>
+        <li><a href="/#testimonials" class="nav-link">Testimonial</a></li>
+      </ul>
+      <div class="nav-utilities">
+        <a href="#" class="nav-util" id="sign-in-link">Sign In</a>
+        <a href="/cart.html" class="cart-btn active-page" id="cart-btn">
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <path d="M6 2L3 6v14a2 2 0 002 2h14a2 2 0 002-2V6l-3-4z"/>
+            <line x1="3" y1="6" x2="21" y2="6"/>
+            <path d="M16 10a4 4 0 01-8 0"/>
+          </svg>
+          <span class="cart-text">My Cart</span> <span class="cart-count" id="cart-count">0</span>
+        </a>
+        <button class="hamburger" id="hamburger-btn" aria-label="Toggle menu">
+          <span></span><span></span><span></span>
+        </button>
+      </div>
+    </nav>
+  </header>
+
+  <!-- PAGE HERO -->
+  <section class="cart-page-hero">
+    <div class="section-eyebrow">Shopping Cart</div>
+    <h1>Your Cart</h1>
+  </section>
+
+  <!-- CART CONTENT — injected by JS -->
+  <div class="cart-page" id="cart-page-content">
+    <div class="cart-layout">
+      <div class="cart-state">
+        <div class="spinner"></div>
+        <p>Loading your cart…</p>
+      </div>
+    </div>
+  </div>
+
+  <!-- AUTH MODAL -->
+  <div class="auth-overlay" id="auth-overlay" style="display:none;" aria-modal="true" role="dialog">
+    <div class="auth-modal" id="auth-modal">
+      <button class="auth-close" id="auth-close" aria-label="Close">✕</button>
+      <div class="auth-header">
+        <div class="auth-logo">ZENCHA</div>
+        <h2 id="auth-title">Welcome back</h2>
+        <p id="auth-subtitle">Sign in to your account</p>
+      </div>
+      <div class="auth-tabs">
+        <button class="auth-tab active" id="tab-login">Sign In</button>
+        <button class="auth-tab" id="tab-signup">Sign Up</button>
+      </div>
+      <form class="auth-form" id="auth-form" novalidate>
+        <div class="auth-field" id="field-name" style="display:none;">
+          <label for="auth-name">Full Name</label>
+          <input type="text" id="auth-name" placeholder="Your name" />
+        </div>
+        <div class="auth-field">
+          <label for="auth-email">Email</label>
+          <input type="email" id="auth-email" placeholder="you@example.com" required />
+        </div>
+        <div class="auth-field">
+          <label for="auth-password">Password</label>
+          <input type="password" id="auth-password" placeholder="Min 6 characters" required />
+        </div>
+        <div class="auth-error" id="auth-error" style="display:none;"></div>
+        <button type="submit" class="auth-submit" id="auth-submit">Sign In</button>
+      </form>
+      <p class="auth-switch">
+        <span id="auth-switch-text">Don't have an account?</span>
+        <button id="auth-switch-btn">Sign up</button>
+      </p>
+    </div>
+  </div>
+
+  <script type="module">
+    import { API, getToken, getUser } from '/shared.js';
+
+    const contentEl = document.getElementById('cart-page-content');
+    let cartData    = null;
+
+    // ── Check login first ─────────────────────────────────
+    const token = getToken();
+    if (!token) {
+      contentEl.innerHTML = `
+        <div class="login-prompt">
+          <h3>Sign in to view your cart</h3>
+          <p>You need to be signed in to access your cart and saved items.</p>
+          <button class="btn-login-cta" id="open-login">Sign In / Create Account</button>
+        </div>`;
+      document.getElementById('open-login').addEventListener('click', function() {
+        document.getElementById('sign-in-link').click();
+      });
+    } else {
+      fetchCart();
+    }
+
+    // ── Fetch cart ────────────────────────────────────────
+    async function fetchCart() {
+      try {
+        const res = await fetch(API + '/api/cart', {
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        if (!res.ok) throw new Error('Failed');
+        cartData = await res.json();
+        renderCart();
+      } catch (err) {
+        console.error('Cart fetch error:', err.message);
+        contentEl.innerHTML = `
+          <div class="cart-layout">
+            <div class="cart-state">
+              <h3>Couldn't load cart</h3>
+              <p>Make sure the backend is running at localhost:5000</p>
+            </div>
+          </div>`;
+      }
+    }
+
+    // ── Render cart ───────────────────────────────────────
+    function renderCart() {
+      const items = cartData.items || [];
+
+      if (!items.length) {
+        contentEl.innerHTML = `
+          <div class="cart-layout">
+            <div class="cart-state">
+              <h3>Your cart is empty</h3>
+              <p>Looks like you haven't added anything yet.</p>
+              <a href="/products.html" class="btn-primary">Browse Products</a>
+            </div>
+          </div>`;
+        return;
+      }
+
+      // Calculate totals
+      const subtotal = items.reduce((sum, item) => {
+        const price = item.product ? item.product.price : 0;
+        return sum + (price * item.quantity);
+      }, 0);
+      const shipping = subtotal > 50 ? 0 : 5.99;
+      const total    = subtotal + shipping;
+
+      // Build items HTML
+      let itemsHTML = '';
+      items.forEach(function(item) {
+        const p    = item.product || {};
+        const name = p.name || 'Product';
+        const img  = p.image || '/ceremonial_matcha.png';
+        const price = (p.price || 0).toFixed(2);
+        const itemTotal = ((p.price || 0) * item.quantity).toFixed(2);
+
+        itemsHTML += `
+          <div class="cart-item" data-product-id="${p._id}">
+            <div class="cart-item-img">
+              <img src="${img}" alt="${name}" onerror="this.src='/ceremonial_matcha.png'" />
+            </div>
+            <div class="cart-item-info">
+              <div class="cart-item-name">${name}</div>
+              <div class="cart-item-unit-price">$${price} each</div>
+              <div class="qty-controls">
+                <button class="qty-btn btn-decrease" data-id="${p._id}" data-qty="${item.quantity}">−</button>
+                <span class="qty-value">${item.quantity}</span>
+                <button class="qty-btn btn-increase" data-id="${p._id}" data-qty="${item.quantity}">+</button>
+              </div>
+            </div>
+            <div class="cart-item-right">
+              <span class="cart-item-total">$${itemTotal}</span>
+              <button class="btn-remove" data-id="${p._id}">Remove</button>
+            </div>
+          </div>
+        `;
+      });
+
+      contentEl.innerHTML = `
+        <div class="cart-layout">
+          <div class="cart-items-panel">
+            <div class="cart-items-header">${items.length} item${items.length !== 1 ? 's' : ''} in your cart</div>
+            ${itemsHTML}
+            <a href="/products.html" style="display:inline-block;margin-top:20px;font-size:0.82rem;color:var(--clr-text-light);text-decoration:underline;">← Continue Shopping</a>
+          </div>
+
+          <div class="order-summary">
+            <h3>Order Summary</h3>
+            <div class="summary-row">
+              <span>Subtotal</span>
+              <span class="summary-val">$${subtotal.toFixed(2)}</span>
+            </div>
+            <div class="summary-row">
+              <span>Shipping</span>
+              <span class="summary-val">${shipping === 0 ? 'Free' : '$' + shipping.toFixed(2)}</span>
+            </div>
+            ${shipping > 0 ? `<div class="summary-row"><span style="font-size:0.72rem;color:var(--clr-text-light)">Free shipping on orders over $50</span></div>` : ''}
+            <div class="summary-row total">
+              <span>Total</span>
+              <span class="summary-val">$${total.toFixed(2)}</span>
+            </div>
+            <button class="btn-checkout" id="checkout-btn">Proceed to Checkout</button>
+            <a href="/products.html" class="btn-continue">Continue Shopping</a>
+          </div>
+        </div>
+      `;
+
+      // Wire buttons
+      contentEl.querySelectorAll('.btn-increase').forEach(btn => btn.addEventListener('click', () => updateQty(btn.dataset.id, parseInt(btn.dataset.qty) + 1)));
+      contentEl.querySelectorAll('.btn-decrease').forEach(btn => btn.addEventListener('click', () => updateQty(btn.dataset.id, parseInt(btn.dataset.qty) - 1)));
+      contentEl.querySelectorAll('.btn-remove').forEach(btn   => btn.addEventListener('click', () => removeItem(btn.dataset.id)));
+      document.getElementById('checkout-btn').addEventListener('click', function() {
+        alert('Checkout coming soon! Order total: $' + total.toFixed(2));
+      });
+
+      // Update badge
+      const totalQty = items.reduce((s, i) => s + i.quantity, 0);
+      const badge = document.getElementById('cart-count');
+      if (badge) badge.textContent = totalQty;
+    }
+
+    // ── Update quantity ───────────────────────────────────
+    async function updateQty(productId, newQty) {
+      try {
+        const endpoint = newQty <= 0
+          ? `/api/cart/remove/${productId}`
+          : '/api/cart/update';
+        const options = {
+          method: newQty <= 0 ? 'DELETE' : 'PUT',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': 'Bearer ' + token
+          }
+        };
+        if (newQty > 0) options.body = JSON.stringify({ productId, quantity: newQty });
+
+        const res  = await fetch(API + endpoint, options);
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+
+        cartData = data;
+        renderCart();
+      } catch (err) {
+        console.error('Update qty error:', err.message);
+      }
+    }
+
+    // ── Remove item ───────────────────────────────────────
+    async function removeItem(productId) {
+      try {
+        const res  = await fetch(API + '/api/cart/remove/' + productId, {
+          method: 'DELETE',
+          headers: { 'Authorization': 'Bearer ' + token }
+        });
+        const data = await res.json();
+        if (!res.ok) throw new Error(data.message);
+        cartData = data;
+        renderCart();
+      } catch (err) {
+        console.error('Remove error:', err.message);
+      }
+    }
+
+    // ── Hamburger ────────────────────────────────────────
+    const hamburger = document.getElementById('hamburger-btn');
+    const navLinks  = document.getElementById('main-nav');
+    if (hamburger) hamburger.addEventListener('click', function() {
+      navLinks.classList.toggle('is-open');
+      hamburger.classList.toggle('is-active');
+    });
+
+    // ── Auth modal ────────────────────────────────────────
+    const overlay   = document.getElementById('auth-overlay');
+    const signInBtn = document.getElementById('sign-in-link');
+    const closeBtn  = document.getElementById('auth-close');
+    const form      = document.getElementById('auth-form');
+    const tabLogin  = document.getElementById('tab-login');
+    const tabSignup = document.getElementById('tab-signup');
+    const switchBtn = document.getElementById('auth-switch-btn');
+    const fieldName = document.getElementById('field-name');
+    const errorBox  = document.getElementById('auth-error');
+    const submitBtn = document.getElementById('auth-submit');
+    let authMode    = 'login';
+
+    if (signInBtn) signInBtn.addEventListener('click', e => { e.preventDefault(); overlay.style.display = 'flex'; });
+    if (closeBtn)  closeBtn.addEventListener('click',  () => { overlay.style.display = 'none'; form.reset(); });
+    overlay.addEventListener('click', e => { if (e.target === overlay) { overlay.style.display = 'none'; } });
+
+    function setAuthMode(m) {
+      authMode = m;
+      if (m === 'login') {
+        tabLogin.classList.add('active'); tabSignup.classList.remove('active');
+        fieldName.style.display = 'none';
+        document.getElementById('auth-title').textContent    = 'Welcome back';
+        document.getElementById('auth-subtitle').textContent = 'Sign in to your account';
+        submitBtn.textContent = 'Sign In';
+        document.getElementById('auth-switch-text').textContent = "Don't have an account?";
+        switchBtn.textContent = 'Sign up';
+      } else {
+        tabSignup.classList.add('active'); tabLogin.classList.remove('active');
+        fieldName.style.display = '';
+        document.getElementById('auth-title').textContent    = 'Create account';
+        document.getElementById('auth-subtitle').textContent = 'Join the matcha ritual';
+        submitBtn.textContent = 'Create Account';
+        document.getElementById('auth-switch-text').textContent = 'Already have an account?';
+        switchBtn.textContent = 'Sign in';
+      }
+    }
+
+    tabLogin.addEventListener('click', () => setAuthMode('login'));
+    tabSignup.addEventListener('click', () => setAuthMode('signup'));
+    switchBtn.addEventListener('click', () => setAuthMode(authMode === 'login' ? 'signup' : 'login'));
+
+    form.addEventListener('submit', async function(e) {
+      e.preventDefault();
+      errorBox.style.display = 'none';
+      const email    = document.getElementById('auth-email').value.trim();
+      const password = document.getElementById('auth-password').value;
+      const name     = document.getElementById('auth-name').value.trim();
+      if (!email || !password) { errorBox.textContent = 'Email and password required'; errorBox.style.display = ''; return; }
+      submitBtn.disabled = true; submitBtn.textContent = 'Please wait...';
+      try {
+        const endpoint = authMode === 'login' ? '/api/auth/login' : '/api/auth/signup';
+        const body     = authMode === 'login' ? { email, password } : { name, email, password };
+        const res  = await fetch(API + endpoint, { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+        const data = await res.json();
+        if (!res.ok) { errorBox.textContent = data.message || 'Error'; errorBox.style.display = ''; return; }
+        localStorage.setItem('zenchaToken', data.token);
+        localStorage.setItem('zenchaUser', JSON.stringify({ name: data.name, email: data.email }));
+        location.reload();
+      } catch(err) {
+        errorBox.textContent = 'Cannot connect to server'; errorBox.style.display = '';
+      } finally {
+        submitBtn.disabled = false;
+        submitBtn.textContent = authMode === 'login' ? 'Sign In' : 'Create Account';
+      }
+    });
+  </script>
+</body>
+</html>
